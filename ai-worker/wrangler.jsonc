@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "catan-guide-ai",
+  "main": "src/index.mjs",
+  "compatibility_date": "2026-10-29",
+  "workers_dev": true,
+  "ai": {
+    "binding": "AI"
+  },
+  "ratelimits": [
+    {
+      "name": "AI_RATE_LIMIT",
+      "namespace_id": "928374615",
+      "simple": {
+        "limit": 8,
+        "period": 60
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="catan-ai-endpoint" content="https://catan-guide-ai.iseohyeon105.workers.dev">
   <title>카탄(CATAN) 초보자 가이드 | 모바일 룰북</title>
   <style>
 /* =========================================
@@ -163,7 +164,7 @@ body {
 .mobile-container.intro-active .progress-bar-bg,
 .mobile-container.intro-active .content-area,
 .mobile-container.intro-active .app-footer,
-.mobile-container.intro-active .btn-search {
+.mobile-container.intro-active .btn-ai {
   display: none;
 }
 
@@ -2049,13 +2050,13 @@ input:checked + .slider:before {
   border: 1px solid #ebd9bf;
 }
 
-/* ===== Header search button & rule-search overlay ===== */
-.btn-search {
+/* ===== Header AI button & chat ===== */
+.btn-ai {
   position: absolute;
   right: 14px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: var(--catan-gold-light);
   color: #925805;
   border: 1px solid rgba(229, 152, 25, 0.35);
@@ -2066,10 +2067,10 @@ input:checked + .slider:before {
   font-weight: 800;
   cursor: pointer;
 }
-.btn-search svg { width: 15px; height: 15px; }
-.btn-search:active { transform: scale(0.96); }
+.btn-ai svg { width: 15px; height: 15px; }
+.btn-ai:active { transform: scale(0.96); }
 
-.sx-overlay {
+.ai-overlay {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -2081,87 +2082,176 @@ input:checked + .slider:before {
   background: var(--bg-main);
   display: none;
   flex-direction: column;
-  padding: 16px 22px 28px;
-  overflow-y: auto;
+  padding: 16px 18px max(18px, env(safe-area-inset-bottom));
+  overflow: hidden;
 }
-.sx-overlay.open { display: flex; }
-.sx-top {
+.ai-overlay.open { display: flex; }
+.ai-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-light);
 }
-.sx-title {
+.ai-title {
   font-size: 17px;
   font-weight: 900;
   color: #2c2523;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
-.sx-title svg { width: 18px; height: 18px; color: var(--catan-gold); }
-.sx-close {
+.ai-title svg { width: 19px; height: 19px; color: #a56a0a; }
+.ai-close {
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: 999px;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   font-size: 15px;
   font-weight: 800;
   color: #5a626a;
   cursor: pointer;
 }
-.sx-input {
-  width: 100%;
-  border: none;
-  border-bottom: 3px solid var(--catan-gold);
-  background: transparent;
-  padding: 10px 2px 14px;
-  font-family: inherit;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  outline: none;
-  border-radius: 0;
-  -webkit-appearance: none;
-  appearance: none;
+.ai-intro {
+  margin: 12px 0 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 }
-.sx-input::placeholder { color: var(--text-muted); font-weight: 600; }
-.sx-list { margin-top: 8px; }
-.sx-item {
-  display: grid;
-  grid-template-columns: 46px 1fr 26px;
-  align-items: center;
-  width: 100%;
-  padding: 19px 0;
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border-light);
-  font-family: inherit;
-  text-align: left;
+.ai-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 0 18px;
+  overscroll-behavior: contain;
+}
+.ai-message {
+  width: fit-content;
+  max-width: 88%;
+  margin: 0 0 12px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ai-message-assistant {
+  margin-right: auto;
+  color: var(--text-primary);
+  background: #f5f1e9;
+  border: 1px solid #ebe2d3;
+  border-top-left-radius: 5px;
+}
+.ai-message-user {
+  margin-left: auto;
+  color: #553706;
+  background: #ffedc8;
+  border: 1px solid #f2d89f;
+  border-top-right-radius: 5px;
+}
+.ai-message-error {
+  color: #9c2921;
+  background: #fff1ef;
+  border-color: #f1c8c3;
+}
+.ai-prompt-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 14px;
+}
+.ai-prompt-list[hidden] { display: none; }
+.ai-prompt {
+  border: 1px solid #e6d6ba;
+  border-radius: 16px;
+  padding: 7px 10px;
+  background: #fffdf8;
+  color: #68460f;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
 }
-.sx-item:active { background: rgba(229, 152, 25, 0.08); }
-.sx-num { font-size: 15px; font-weight: 800; color: var(--text-muted); }
-.sx-name { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.3px; }
-.sx-arrow { width: 22px; height: 22px; color: var(--text-primary); }
-.sx-empty {
-  padding: 36px 4px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.6;
+.ai-prompt:active { transform: scale(0.97); }
+.ai-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
 }
-.sx-flash {
-  outline: 3px solid var(--catan-gold);
-  outline-offset: 3px;
-  border-radius: var(--radius-md);
-  animation: sxPulse 1.3s ease-out 2;
+.ai-input {
+  width: 100%;
+  min-height: 44px;
+  max-height: 120px;
+  resize: none;
+  border: 1px solid #dfd4c3;
+  border-radius: 12px;
+  background: #fff;
+  padding: 11px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  outline: none;
 }
-@keyframes sxPulse {
-  0% { box-shadow: 0 0 0 0 rgba(229, 152, 25, 0.55); }
-  100% { box-shadow: 0 0 0 16px rgba(229, 152, 25, 0); }
+.ai-input:focus-visible { border-color: #bb7b12; box-shadow: 0 0 0 3px rgba(229, 152, 25, 0.16); }
+.ai-input::placeholder { color: #77716a; }
+.ai-send {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: #9a6108;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.ai-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-send svg { width: 20px; height: 20px; }
+.ai-send:active:not(:disabled) { transform: scale(0.96); }
+.ai-setup-note {
+  margin: 8px 2px 0;
+  color: #71695f;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.ai-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.ai-thinking {
+  width: 170px;
+  height: 46px;
+  background: linear-gradient(90deg, #f5f1e9 25%, #fffaf0 50%, #f5f1e9 75%);
+  background-size: 200% 100%;
+  animation: aiThinking 1.4s ease-in-out infinite;
+}
+@keyframes aiThinking {
+  to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-thinking { animation: none; }
+}
+@media (min-width: 481px) {
+  .ai-overlay {
+    top: 24px;
+    bottom: 24px;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 56px rgba(44, 37, 35, 0.24);
+  }
 }
 
 /* Start-order text & "ex)" label */
@@ -2302,9 +2392,9 @@ input:checked + .slider:before {
         <h1 class="brand">
           <button class="btn-guide" type="button" onclick="openGuideIntro()">사이트 가이드</button>
         </h1>
-        <button class="btn-search" onclick="openSearch()" aria-label="규칙 검색">
+        <button class="btn-ai" type="button" onclick="openAIChat()" aria-label="AI에게 질문">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg>
-          검색
+          AI
         </button>
       </div>
 
@@ -2894,14 +2984,31 @@ input:checked + .slider:before {
     </footer>
   </div>
 
-  <!-- Rule Search Overlay -->
-  <div id="searchOverlay" class="sx-overlay" role="dialog" aria-label="규칙 찾기">
-    <div class="sx-top">
-      <div></div>
-      <button class="sx-close" onclick="closeSearch()" aria-label="닫기">✕</button>
+  <div id="aiChatOverlay" class="ai-overlay" role="dialog" aria-modal="true" aria-labelledby="aiChatTitle" aria-hidden="true">
+    <header class="ai-header">
+      <h2 class="ai-title" id="aiChatTitle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg>
+        카탄 AI에게 질문
+      </h2>
+      <button class="ai-close" type="button" onclick="closeAIChat()" aria-label="AI 질문 닫기">✕</button>
+    </header>
+    <p class="ai-intro">카탄 초보자 가이드를 바탕으로 규칙을 설명해 드려요.</p>
+    <div class="ai-messages" id="aiChatMessages" role="log" aria-live="polite" aria-relevant="additions">
+      <div class="ai-message ai-message-assistant">안녕하세요. 카탄 규칙이 궁금하면 편하게 물어보세요.</div>
     </div>
-    <input id="searchInput" class="sx-input" type="text" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder="예: 자원카드, 길">
-    <div id="searchResults" class="sx-list"></div>
+    <div class="ai-prompt-list" id="aiPromptList" aria-label="추천 질문">
+      <button class="ai-prompt" type="button" data-ai-prompt="주사위 7이 나오면 어떻게 하나요?">주사위 7이 나오면?</button>
+      <button class="ai-prompt" type="button" data-ai-prompt="마을과 도시를 지을 때 필요한 자원은 무엇인가요?">건설 비용은?</button>
+      <button class="ai-prompt" type="button" data-ai-prompt="기사카드는 언제 어떻게 사용하나요?">기사카드 사용법</button>
+    </div>
+    <form class="ai-form" id="aiChatForm">
+      <label class="ai-sr-only" for="aiChatInput">카탄 규칙 질문</label>
+      <textarea class="ai-input" id="aiChatInput" rows="1" maxlength="1200" placeholder="카탄 규칙을 질문해 보세요" required></textarea>
+      <button class="ai-send" id="aiChatSend" type="submit" aria-label="질문 보내기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </form>
+    <p class="ai-setup-note" id="aiChatStatus" aria-live="polite">AI 연결 설정을 마치면 실시간 질문에 답해드려요.</p>
   </div>
 
   <!-- Fullscreen Image Lightbox Modal -->
@@ -2930,6 +3037,7 @@ const totalSteps = 7;
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initTouchGestures();
+  initAIChat();
   initBoardAssemblyMotion();
   initStartingBoardSlider();
   reorderPlayerPieceCards();
@@ -3328,110 +3436,204 @@ function initTouchGestures() {
 
 }
 
-/* ================= Rule Search ================= */
-// Topics are listed in the same order they appear in the guide.
-const SEARCH_TOPICS = [
-  { id: 'sx-victory', title: '승리', keys: ['승리', '승리 조건', '승점', '10점', '점수', '이기는 법', '게임 종료', '종료'] },
-  { id: 'sx-cost', title: '건설 비용', keys: ['건설 비용', '건설비용', '비용', '가격', '얼마', '재료', '필요한 자원', '참조표'] },
-  { id: 'sx-dev', title: '발전카드', keys: ['발전카드', '발전 카드', '카드', '기사 카드', '진보', '승점 카드', '도서관', '도로 건설'] },
-  { id: 'sx-longest', title: '최장 교역로', keys: ['최장 교역로', '교역로', '최장 도로', '긴 도로', '도로 5개', '길'] },
-  { id: 'sx-army', title: '최강 기사단', keys: ['최강 기사단', '기사단', '기사', '기사 3장', '동점'] },
-  { id: 'sx-produce', title: '자원 생산', keys: ['자원 생산', '자원', '생산', '주사위', '굴리기', '숫자 칩', '숫자', '확률', '6', '8', '자원 얻기'] },
-  { id: 'sx-trade', title: '거래', keys: ['거래', '교환', '흥정', '협상', '내륙 거래', '플레이어 간 거래'] },
-  { id: 'sx-port', title: '항구', keys: ['항구', '해상', '해상 거래', '은행', '4:1', '3:1', '2:1'] },
-  { id: 'sx-build', title: '건설', keys: ['건설', '도로', '마을', '도시', '정착지', '짓기', '업그레이드'] },
-];
+/* ================= AI chat ================= */
+let aiConversation = [];
+let aiPending = false;
+let aiPreviousFocus = null;
 
-const SEARCH_ARROW = '<svg class="sx-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="18" x2="18" y2="6"></line><polyline points="8 6 18 6 18 16"></polyline></svg>';
+function initAIChat() {
+  const form = document.getElementById('aiChatForm');
+  const input = document.getElementById('aiChatInput');
+  const overlay = document.getElementById('aiChatOverlay');
+  if (!form || !(input instanceof HTMLTextAreaElement) || !overlay) return;
 
-function normalizeText(s) {
-  return (s || '').toLowerCase().replace(/\s+/g, '');
-}
-
-function getHitBox(el) {
-  return el.closest('.victory-highlight-card, .spec-card, .component-card, .phase-block, .trade-box, .rule-deep-card') || el;
-}
-
-function searchTopics(query) {
-  const n = normalizeText(query);
-  if (!n) return SEARCH_TOPICS.map((t, i) => ({ t, i, s: 0 }));
-
-  const scored = SEARCH_TOPICS.map((t, i) => {
-    let s = 0;
-    if (normalizeText(t.title).includes(n)) {
-      s = 3;
-    } else if (t.keys.some(k => {
-      const kn = normalizeText(k);
-      return kn.includes(n) || (kn.length >= 2 && n.includes(kn));
-    })) {
-      s = 2;
-    }
-    return { t, i, s };
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    sendAIQuestion(input.value);
   });
 
-  let hits = scored.filter(x => x.s >= 2);
-  if (!hits.length) {
-    // Fallback: look through the text of each section
-    hits = scored.filter(x => {
-      const el = document.getElementById(x.t.id);
-      return el && normalizeText(getHitBox(el).textContent).includes(n);
-    }).map(x => ({ t: x.t, i: x.i, s: 1 }));
-  }
-  return hits.sort((a, b) => b.s - a.s || a.i - b.i);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+  });
+
+  document.querySelectorAll('[data-ai-prompt]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (!(button instanceof HTMLButtonElement)) return;
+      input.value = button.dataset.aiPrompt || '';
+      form.requestSubmit();
+    });
+  });
+
+  overlay.addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const focusable = [...overlay.querySelectorAll('button:not(:disabled), textarea:not(:disabled)')];
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeAIChat();
+  });
 }
 
-function renderSearchResults(query) {
-  const box = document.getElementById('searchResults');
-  if (!box) return;
-  const hits = searchTopics(query);
-  if (!hits.length) {
-    box.innerHTML = '<div class="sx-empty">찾는 규칙이 없어요.<br>다른 키워드로 검색해 보세요.</div>';
+function openAIChat() {
+  const overlay = document.getElementById('aiChatOverlay');
+  const input = document.getElementById('aiChatInput');
+  const status = document.getElementById('aiChatStatus');
+  if (!overlay || !(input instanceof HTMLTextAreaElement)) return;
+
+  aiPreviousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  if (status) {
+    status.textContent = getAIEndpoint()
+      ? 'AI 답변은 가이드 기준으로 제공되며, 일부 내용이 부정확할 수 있어요.'
+      : 'Cloudflare Worker를 배포하고 주소를 등록하면 실시간 질문을 사용할 수 있어요.';
+  }
+  setTimeout(() => input.focus(), 60);
+}
+
+function closeAIChat() {
+  const overlay = document.getElementById('aiChatOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  document.body.style.overflow = '';
+  aiPreviousFocus?.focus();
+  aiPreviousFocus = null;
+}
+
+function getAIEndpoint() {
+  return document.querySelector('meta[name="catan-ai-endpoint"]')?.getAttribute('content')?.trim() || '';
+}
+
+function appendAIMessage(content, kind = 'assistant') {
+  const messages = document.getElementById('aiChatMessages');
+  if (!messages) return null;
+  const message = document.createElement('div');
+  message.className = `ai-message ai-message-${kind}`;
+  message.textContent = content;
+  messages.appendChild(message);
+  messages.scrollTop = messages.scrollHeight;
+  return message;
+}
+
+async function sendAIQuestion(rawQuestion) {
+  if (aiPending) return;
+  const question = rawQuestion.trim();
+  const input = document.getElementById('aiChatInput');
+  const sendButton = document.getElementById('aiChatSend');
+  const promptList = document.getElementById('aiPromptList');
+  const messages = document.getElementById('aiChatMessages');
+  const status = document.getElementById('aiChatStatus');
+  if (!question || !(input instanceof HTMLTextAreaElement) || !messages) return;
+
+  const endpoint = getAIEndpoint();
+  if (!endpoint) {
+    appendAIMessage('AI 서버 주소가 아직 연결되지 않았어요. Cloudflare Worker 배포와 주소 설정이 필요합니다.', 'error');
+    if (status) status.textContent = 'AI 연결 설정이 끝나면 질문에 답해드려요.';
     return;
   }
-  box.innerHTML = hits.map(h => {
-    const num = String(h.i + 1).padStart(2, '0');
-    return '<button class="sx-item" onclick="goToTopic(\'' + h.t.id + '\')">' +
-      '<span class="sx-num">' + num + '</span>' +
-      '<span class="sx-name">' + h.t.title + '</span>' +
-      SEARCH_ARROW + '</button>';
-  }).join('');
-}
 
-function openSearch() {
-  const ov = document.getElementById('searchOverlay');
-  const input = document.getElementById('searchInput');
-  if (!ov) return;
-  ov.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  if (input) {
-    input.value = '';
-    renderSearchResults('');
-    setTimeout(() => input.focus(), 60);
+  let apiURL;
+  try {
+    apiURL = new URL('/api/chat', endpoint);
+  } catch (error) {
+    console.error('Invalid AI endpoint URL', error);
+    appendAIMessage('AI 서버 주소 설정을 확인해 주세요.', 'error');
+    return;
   }
-}
+  if (apiURL.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(apiURL.hostname)) {
+    appendAIMessage('AI 서버 주소는 HTTPS 연결이어야 합니다.', 'error');
+    return;
+  }
 
-function closeSearch() {
-  const ov = document.getElementById('searchOverlay');
-  if (ov) ov.classList.remove('open');
-  document.body.style.overflow = '';
-}
+  aiPending = true;
+  if (sendButton instanceof HTMLButtonElement) sendButton.disabled = true;
+  if (promptList) promptList.hidden = true;
+  appendAIMessage(question, 'user');
+  aiConversation.push({ role: 'user', content: question });
+  input.value = '';
+  input.style.height = 'auto';
+  const thinking = appendAIMessage('답변을 준비하고 있어요.', 'assistant');
+  if (thinking) {
+    thinking.classList.add('ai-thinking');
+    thinking.setAttribute('role', 'status');
+    thinking.setAttribute('aria-label', 'AI가 답변을 작성하고 있습니다');
+    thinking.textContent = '';
+  }
+  if (status) status.textContent = 'AI가 답변을 작성하고 있어요.';
 
-function goToTopic(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const card = el.closest('.step-card');
-  const step = card ? parseInt(card.id.replace('step-', ''), 10) : 1;
-  closeSearch();
-  goToStep(step);
-  const box = getHitBox(el);
-  setTimeout(() => {
-    box.style.scrollMarginTop = '132px';
-    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    box.classList.remove('sx-flash');
-    void box.offsetWidth;
-    box.classList.add('sx-flash');
-    setTimeout(() => box.classList.remove('sx-flash'), 2800);
-  }, 90);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  try {
+    const response = await fetch(apiURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: aiConversation.slice(-12) }),
+      signal: controller.signal
+    });
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error('AI 서버 응답을 읽을 수 없습니다.');
+    }
+    if (!response.ok) {
+      const error = new Error(typeof result.error === 'string' ? result.error : 'AI 답변 요청에 실패했습니다.');
+      error.status = response.status;
+      throw error;
+    }
+    if (typeof result.answer !== 'string' || !result.answer.trim()) {
+      throw new Error('AI가 빈 답변을 반환했습니다.');
+    }
+    const answer = result.answer.trim();
+    aiConversation.push({ role: 'assistant', content: answer });
+    if (thinking) {
+      thinking.classList.remove('ai-thinking');
+      thinking.removeAttribute('role');
+      thinking.removeAttribute('aria-label');
+      thinking.textContent = answer;
+    }
+    if (status) status.textContent = '답변은 카탄 초보자 가이드 기준이며, 게임 전 규칙을 함께 확인해 주세요.';
+  } catch (error) {
+    console.error('AI chat request failed', error);
+    if (thinking) thinking.remove();
+    const message = error.name === 'AbortError'
+      ? '응답 시간이 초과됐어요. 잠시 후 다시 질문해 주세요.'
+      : error.status === 429
+        ? '질문이 잠시 몰리고 있어요. 1분 뒤 다시 시도해 주세요.'
+        : error.status && typeof error.message === 'string'
+          ? error.message
+          : error instanceof TypeError
+            ? 'AI 서버에 연결하지 못했어요. 연결 주소와 인터넷 상태를 확인해 주세요.'
+            : 'AI 답변을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+    appendAIMessage(message, 'error');
+    if (status) status.textContent = '답변 요청에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+  } finally {
+    clearTimeout(timeout);
+    aiPending = false;
+    if (sendButton instanceof HTMLButtonElement) sendButton.disabled = false;
+    messages.scrollTop = messages.scrollHeight;
+  }
 }
 
 function goToRobberEvent(event) {
@@ -3466,22 +3668,6 @@ function goToKnightCard(event) {
     setTimeout(() => card.classList.remove('guide-target-flash'), 3000);
   });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('searchInput');
-  if (input) {
-    input.addEventListener('input', () => renderSearchResults(input.value));
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const first = document.querySelector('#searchResults .sx-item');
-        if (first) first.click();
-      }
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeSearch();
-  });
-});
 
 /* ================= Lightbox Modal ================= */
 function openLightbox(src, title) {
