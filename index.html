@@ -2289,7 +2289,7 @@ input:checked + .slider:before {
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="mobile-container intro-active">
+  <div class="mobile-container">
     <!-- Header -->
     <header class="app-header">
       <div class="header-top">
@@ -2338,7 +2338,7 @@ input:checked + .slider:before {
       </div>
     </header>
 
-    <main class="guide-intro-screen" id="guideIntro" aria-label="사이트 가이드 시작 안내">
+    <main class="guide-intro-screen" id="guideIntro" aria-label="사이트 가이드 시작 안내" aria-hidden="true">
       <div class="guide-intro-copy">
         <p class="guide-intro-lead">
           ( 이 사이트를 보시는 분은,<br>
@@ -2966,6 +2966,11 @@ function initNavigation() {
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const step = parseInt(tab.getAttribute('data-step'), 10);
+      if (step === 2) {
+        openGuideIntro();
+        return;
+      }
+      document.getElementById('guideIntro')?.setAttribute('aria-hidden', 'true');
       goToStep(step);
     });
   });
