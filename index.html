@@ -2917,6 +2917,7 @@ input:checked + .slider:before {
  */
 
 let currentStep = 1;
+let hasShownPageTwoGuide = false;
 const totalSteps = 7;
 
 // DOM Elements
@@ -2967,8 +2968,11 @@ function initNavigation() {
     tab.addEventListener('click', () => {
       const step = parseInt(tab.getAttribute('data-step'), 10);
       if (step === 2) {
-        openGuideIntro();
-        return;
+        if (!hasShownPageTwoGuide) {
+          hasShownPageTwoGuide = true;
+          openGuideIntro();
+          return;
+        }
       }
       document.getElementById('guideIntro')?.setAttribute('aria-hidden', 'true');
       goToStep(step);
@@ -2995,7 +2999,8 @@ function navigateStep(delta) {
   let next = currentStep + delta;
   if (next < 1) next = 1;
   if (next > totalSteps) next = 1; // loop or stay
-  if (currentStep === 1 && next === 2 && delta > 0) {
+  if (currentStep === 1 && next === 2 && delta > 0 && !hasShownPageTwoGuide) {
+    hasShownPageTwoGuide = true;
     openGuideIntro();
     return;
   }
