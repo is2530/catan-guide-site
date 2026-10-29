@@ -2995,6 +2995,11 @@ function navigateStep(delta) {
   let next = currentStep + delta;
   if (next < 1) next = 1;
   if (next > totalSteps) next = 1; // loop or stay
+  if (next === 2) {
+    openGuideIntro();
+    return;
+  }
+  document.getElementById('guideIntro')?.setAttribute('aria-hidden', 'true');
   goToStep(next);
 }
 
